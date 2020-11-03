@@ -263,7 +263,7 @@ def origin_create_plots(db):
         plot1 = graph[0].add_plot(wks, coly="F", colx="E", type='line')
         plot2 = graph[0].add_plot(wks, coly="B", colx="A", type='line')
         # Rescales axis, sets linewidth up, sets up autocolour:
-        op.lt_exec("Rescale; set %C -w 2000; layer -g;")
+        op.lt_exec("Rescale; set %C -w 2000; layer -g; layer.X.showAxes=3; layer.Y.showAxes=3;")
 
         layer2 = graph.add_layer(type="noxy") # new layer, noax allows us to use the same axis as before
         plot3 = graph[1].add_plot(wks, coly="H", colx="G", type='line')
