@@ -9,7 +9,6 @@ lives inside it. You can run this using the command
 
 import os
 import csv
-
 try:
     import originpro as op
 except ModuleNotFoundError:
