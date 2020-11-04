@@ -263,7 +263,11 @@ def origin_create_plots(db):
         plot1 = graph[0].add_plot(wks, coly="F", colx="E", type='line')
         plot2 = graph[0].add_plot(wks, coly="B", colx="A", type='line')
         # Rescales axis, sets linewidth up, sets up autocolour:
+        op.lt_exec("addline type:=1 value:=0 select:=1 name:=vline1;")
+        op.lt_exec("addline type:=0 value:=0 select:=1 name:=vline1;")
+         
         op.lt_exec("Rescale; set %C -w 2000; layer -g; layer.X.showAxes=3; layer.Y.showAxes=3;")
+       
 
         layer2 = graph.add_layer(type="noxy") # new layer, noax allows us to use the same axis as before
         plot3 = graph[1].add_plot(wks, coly="H", colx="G", type='line')
@@ -324,7 +328,7 @@ def origin_create_plots(db):
 
 if __name__ == '__main__':
     # Ask user for where the data lives:
-    datapath = input("Please enter the path to your data: ")
+    datapath = r"C:\Users\akashdasgupta\Documents\temp" #input("Please enter the path to your data: ")
     print_logo()  # most important part of the code, without a doubt
 
     database = create_db(datapath)
