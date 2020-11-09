@@ -257,18 +257,15 @@ def origin_create_plots(db):
         wks.from_list('H', dy2, 'Current', 'A', "Dark, 2", axis='Y')
 
         # Create graph to plot into:
-        graph = op.new_graph(lname="IV: " + key, template='line')
+        graph = op.new_graph(lname="IV: " + key, template=op.path('u')+'a4_template.otpu')
+        #!!! a custom template is used in line above, change it to "line" if this is missing!!!
 
         # First 2 (solid line) plots on base layer:
         plot1 = graph[0].add_plot(wks, coly="F", colx="E", type='line')
         plot2 = graph[0].add_plot(wks, coly="B", colx="A", type='line')
-        # Rescales axis, sets linewidth up, sets up autocolour:
-        op.lt_exec("addline type:=1 value:=0 select:=1 name:=vline1;")
-        op.lt_exec("addline type:=0 value:=0 select:=1 name:=vline1;")
-         
+        # Rescales axis, sets linewidth up, sets up autocolour:        
         op.lt_exec("Rescale; set %C -w 2000; layer -g; layer.X.showAxes=3; layer.Y.showAxes=3;")
-       
-
+    
         layer2 = graph.add_layer(type="noxy") # new layer, noax allows us to use the same axis as before
         plot3 = graph[1].add_plot(wks, coly="H", colx="G", type='line')
         plot4 = graph[1].add_plot(wks, coly="D", colx="C", type='line')
@@ -323,7 +320,6 @@ def origin_create_plots(db):
     wks_sum.from_list('I', graph_strs, 'IV curve', comments='CLICK the cell', axis='Z')
 
     return True
-
 
 
 if __name__ == '__main__':
