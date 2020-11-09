@@ -296,29 +296,55 @@ def origin_create_plots(db):
         plot4 = graph[1].add_plot(wks, coly="D", colx="C", type='line')
         # Rescales axis, sets linewidth up, Changes linestyle to dash, sets up autocolour:
         op.lt_exec("Rescale; set %C -w 2000; layer -g; set %C -d 1")
-
-        wks2 = op.new_sheet(lname="hacky_way_of_making_boxes", hidden=True)
         
-        voc_sweep = [voc*i/50 for i in range(50)]
-        isc_sweep = [isc*i/50 for i in range(50)]
+        ######################################################################
+        # Fill factor rectangles: 
+
+        # Ideal:
+        voc_sweep = [voc*(i+1)/50 for i in range(50)]
+        isc_sweep = [isc*(i+1)/50 for i in range(50)]
         v_ideal = []
         i_ideal = []
-        for isc_step in isc_sweep:
-            v_ideal.append(voc)
-            i_ideal.append(isc_step)
+        
         for voc_step in voc_sweep:
             v_ideal.append(voc_step)
             i_ideal.append(isc)
-
+        for isc_step in isc_sweep:
+            v_ideal.append(voc)
+            i_ideal.append(isc_step)
         
-        wks2.from_list('A', v_ideal, axis='X')
-        wks2.from_list('B', i_ideal, "Max power rectangle", axis='Y')
+        # Max power: 
+        v_mppt_sweep = [vm*(i+1)/50 for i in range(50)]
+        i_mppt_sweep = [im*(i+1)/50 for i in range(50)]
+        v_mppt_rect = []
+        i_mppt_rect = []
+        
+        for voc_step in v_mppt_sweep:
+            v_mppt_rect.append(voc_step)
+            i_mppt_rect.append(mpp_i)
+        for isc_step in i_mppt_sweep:
+            v_mppt_rect.append(mpp_v)
+            i_mppt_rect.append(isc_step)
 
+        # Push to hidden worksheet:           
+        wks2 = op.new_sheet(lname="hacky_way_of_making_boxes(max_power)", hidden=True)
+        wks2.from_list('A', v_mppt_rect, axis='X')
+        wks2.from_list('B', i_mppt_rect, "Max power rectangle", axis='Y')
+        # Add to plot:
         layer3 = graph.add_layer(type="noxy") # new layer, noax allows us to use the same axis as before
-        plot3 = graph[2].add_plot(wks2, colx="A", coly="B", type='line')
-        op.lt_exec("Rescale; set %C -w 2000; layer -g; set %C -d 1")
+        plot5 = graph[2].add_plot(wks2, colx="A", coly="B", type='line')
+        op.lt_exec('Rescale; set %C -w 2000; set %C -d 5; set %c -cl color("Blue");')
+        
+        wks3 = op.new_sheet(lname="hacky_way_of_making_boxes(ideal)", hidden=True)
+        wks3.from_list('A', v_ideal, axis='X')
+        wks3.from_list('B', i_ideal, "ideal power rectangle", axis='Y')
 
-
+        layer4 = graph.add_layer(type="noxy") # new layer, noax allows us to use the same axis as before
+        plot6 = graph[3].add_plot(wks3, colx="A", coly="B", type='line')
+        op.lt_exec('Rescale; set %C -w 2000; set %C -d 1; set %c -cl color("#008800");')
+        
+        ######################################################################
+    
         op.wait()  # wait until operation is done
         op.wait('s', 0.05)  # wait further for graph to update
         
