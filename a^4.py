@@ -343,6 +343,12 @@ def origin_create_plots(db):
         plot6 = graph[3].add_plot(wks3, colx="A", coly="B", type='line')
         op.lt_exec('Rescale; set %C -w 2000; set %C -d 1; set %c -cl color("#008800");')
         
+        # Add labels for Voc, Isc, ff
+        # Format: label -a "x" "y" "label";
+        op.lt_exec('label -a "'+str(voc+voc/100)+'" "' + str(0)+'" "'+str(round(voc*1000))+' mV";')
+        op.lt_exec('label -a "'+str(0)+'" "' + str(isc)+'" "'+str(round(isc*1000))+' mA";')
+        op.lt_exec('label -a "'+str(vm/2)+'" "' + str(im/2)+'" "Fill Factor: \n '+str(round(ff,3))+'";')
+        
         ######################################################################
     
         op.wait()  # wait until operation is done
