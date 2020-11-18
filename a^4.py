@@ -39,15 +39,14 @@ class PixelData:
         :param mux_index: Index of pixel on device
         :param weather: Weather config
         """
-        self.__id = {} # This will hold all the parameters
-        self.__id["sys_label"] = sys_label
-        self.__id["user_label"] = user_label
-        self.__id["substrate"] = substrate
-        self.__id["layout"] = layout
-        self.__id["area"] = area
-        self.__id["dark_area"] = dark_area
-        self.__id["mux_index"] = mux_index
-        self.__id["weather"] = weather
+        self.__id = {"sys_label": sys_label,
+                     "user_label": user_label,
+                     "substrate": substrate,
+                     "layout": layout,
+                     "area": area,
+                     "dark_area": dark_area,
+                     "mux_index": mux_index,
+                     "weather": weather}  # This will hold all the parameters
 
         # Format: V,I,time, stat
         self.__dark_iv_1 = [None, None, None, None]
@@ -59,7 +58,7 @@ class PixelData:
         self.__mppt = [None, None, None, None]
 
     def set_dark_iv(self, I=None, V=None, t=None, stat=None, index=1):
-        if index == 1: # there's 2 because of hysteresis testing
+        if index == 1:  # there's 2 because of hysteresis testing
             self.__dark_iv_1 = [V, I, t, stat]
         elif index == 2:
             self.__dark_iv_2 = [V, I, t, stat]
@@ -145,7 +144,7 @@ Thanks for running my software. For help: akash.dasgupta@physics.ox.ac.uk
 
 
 def create_db(path):
-    database = {}  # This dude will hold all the PixelData instances
+    db = {}  # This dude will hold all the PixelData instances
 
     csv_file_path = find_ext('.csv', path)[0]  # Assuming only 1 csv
     # Opens CSV and extracts the parameters for each run:
@@ -157,16 +156,16 @@ def create_db(path):
                 skip = False
                 continue
             # The key is actually also how the filename starts:
-            database[row[1] + '_' + row[2] + '_' + "device" + row[7]] = PixelData(row[1],
-                                                                                  row[2],
-                                                                                  row[3],
-                                                                                  row[4],
-                                                                                  row[5],
-                                                                                  row[6],
-                                                                                  row[7],
-                                                                                  row[8], ) # Populates ID
+            db[row[1] + '_' + row[2] + '_' + "device" + row[7]] = PixelData(row[1],
+                                                                            row[2],
+                                                                            row[3],
+                                                                            row[4],
+                                                                            row[5],
+                                                                            row[6],
+                                                                            row[7],
+                                                                            row[8], )  # Populates ID
     # Loops over each pixel, sweep through and mines the data:
-    for key in database.keys():
+    for key in db.keys():
         files_in_class = find_starts_with(key, path)
         for filename in files_in_class:
 
@@ -186,27 +185,27 @@ def create_db(path):
 
             # Add it to the appropriate member var:
             if filename.endswith(".div1.tsv"):
-                database[key].set_dark_iv(I, V, t, stat, 1)
+                db[key].set_dark_iv(I, V, t, stat, 1)
 
             elif filename.endswith(".div2.tsv"):
-                database[key].set_dark_iv(I, V, t, stat, 2)
+                db[key].set_dark_iv(I, V, t, stat, 2)
 
             elif filename.endswith(".liv1.tsv"):
-                database[key].set_light_iv(I, V, t, stat, 1)
+                db[key].set_light_iv(I, V, t, stat, 1)
 
             elif filename.endswith(".liv2.tsv"):
-                database[key].set_light_iv(I, V, t, stat, 2)
+                db[key].set_light_iv(I, V, t, stat, 2)
 
             elif filename.endswith(".it.tsv"):
-                database[key].set_it(I, V, t, stat)
+                db[key].set_it(I, V, t, stat)
 
             elif filename.endswith(".vt.tsv"):
-                database[key].set_vt(I, V, t, stat)
+                db[key].set_vt(I, V, t, stat)
 
             elif filename.endswith(".mppt.tsv"):
-                database[key].set_mppt(I, V, t, stat)
+                db[key].set_mppt(I, V, t, stat)
             # Maybe an else is safe?
-    return database
+    return db
 
 
 def origin_create_plots(db):
@@ -222,7 +221,7 @@ def origin_create_plots(db):
     ids = []  # The ID dict (for info cols)
     graph_strs = []  # Holds hyperlinks to plotted graphs
 
-    Graph_index = 1 # Keep track of how many graphs, needed for the hyperlinking
+    Graph_index = 1  # Keep track of how many graphs, needed for the hyperlinking
     for key in db.keys():
         # move into the full iv curve dir, create new dir per pixel:
         op.lt_exec('pe_cd /; pe_cd "FULL_IV_CURVES"; pe_mkdir "' + key + '"; pe_cd "' + key + '"')
@@ -233,12 +232,11 @@ def origin_create_plots(db):
         # super hacky way to get more cols but like leave me alone
         for i in range(10):
             op.lt_exec('wks.addCol()')
-            
-            
+
         ######################################################################
         # Calculate the parameters:
-        voc = float(db[key].get_vt()[0][0]) # Open circuit voltage, from stability file
-        isc = float(db[key].get_it()[1][0]) # Short circuit current, from stability file
+        voc = float(db[key].get_vt()[0][0])  # Open circuit voltage, from stability file
+        isc = float(db[key].get_it()[1][0])  # Short circuit current, from stability file
 
         # Fill factor: Finds max power, and vm, im in the process, takes ratio of that to voc*isc:
         mpp_i = db[key].get_mppt()[1]
@@ -281,8 +279,8 @@ def origin_create_plots(db):
         wks.from_list('H', dy2, 'Current', 'A', "Dark, 2", axis='Y')
 
         # Create graph to plot into:
-        graph = op.new_graph(lname="IV: " + key, template=op.path('u')+'a4_template.otpu')
-        #!!! a custom template is used in line above, change it to "line" if this is missing!!!
+        graph = op.new_graph(lname="IV: " + key, template=op.path('u') + 'a4_template.otpu')
+        # !!! a custom template is used in line above, change it to "line" if this is missing!!!
 
         # First 2 (solid line) plots on base layer:
         plot1 = graph[0].add_plot(wks, coly="F", colx="E", type='line')
@@ -290,35 +288,35 @@ def origin_create_plots(db):
         # Rescales axis, sets linewidth up, sets up autocolour:        
         op.lt_exec("Rescale; set %C -w 2000; layer -g; layer.X.showAxes=3; layer.Y.showAxes=3;")
 
-        #op.lt_exec("RECT1.DX={};RECT1.DY={};RECT1.X={};RECT1.Y={};RECT1.COLOR=4;RECT1.FILLCOLOR=7;RECT1.SHOW=1;".format(mpp_v/2,mpp_i/2,mpp_v/2,mpp_i/2)) 
-        layer2 = graph.add_layer(type="noxy") # new layer, noax allows us to use the same axis as before
+        # op.lt_exec("RECT1.DX={};RECT1.DY={};RECT1.X={};RECT1.Y={};RECT1.COLOR=4;RECT1.FILLCOLOR=7;RECT1.SHOW=1;".format(mpp_v/2,mpp_i/2,mpp_v/2,mpp_i/2))
+        layer2 = graph.add_layer(type="noxy")  # new layer, noax allows us to use the same axis as before
         plot3 = graph[1].add_plot(wks, coly="H", colx="G", type='line')
         plot4 = graph[1].add_plot(wks, coly="D", colx="C", type='line')
         # Rescales axis, sets linewidth up, Changes linestyle to dash, sets up autocolour:
         op.lt_exec("Rescale; set %C -w 2000; layer -g; set %C -d 1")
-        
+
         ######################################################################
         # Fill factor rectangles: 
 
         # Ideal:
-        voc_sweep = [voc*(i+1)/50 for i in range(50)]
-        isc_sweep = [isc*(i+1)/50 for i in range(50)]
+        voc_sweep = [voc * (i + 1) / 50 for i in range(50)]
+        isc_sweep = [isc * (i + 1) / 50 for i in range(50)]
         v_ideal = []
         i_ideal = []
-        
+
         for voc_step in voc_sweep:
             v_ideal.append(voc_step)
             i_ideal.append(isc)
         for isc_step in isc_sweep:
             v_ideal.append(voc)
             i_ideal.append(isc_step)
-        
+
         # Max power: 
-        v_mppt_sweep = [vm*(i+1)/50 for i in range(50)]
-        i_mppt_sweep = [im*(i+1)/50 for i in range(50)]
+        v_mppt_sweep = [vm * (i + 1) / 50 for i in range(50)]
+        i_mppt_sweep = [im * (i + 1) / 50 for i in range(50)]
         v_mppt_rect = []
         i_mppt_rect = []
-        
+
         for voc_step in v_mppt_sweep:
             v_mppt_rect.append(voc_step)
             i_mppt_rect.append(mpp_i)
@@ -331,35 +329,35 @@ def origin_create_plots(db):
         wks2.from_list('A', v_mppt_rect, axis='X')
         wks2.from_list('B', i_mppt_rect, "Max power rectangle", axis='Y')
         # Add to plot:
-        layer3 = graph.add_layer(type="noxy") # new layer, noax allows us to use the same axis as before
+        layer3 = graph.add_layer(type="noxy")  # new layer, noax allows us to use the same axis as before
         plot5 = graph[2].add_plot(wks2, colx="A", coly="B", type='line')
         op.lt_exec('Rescale; set %C -w 2000; set %C -d 5; set %c -cl color("Blue");')
-        
+
         wks3 = op.new_sheet(lname="hacky_way_of_making_boxes(ideal)", hidden=True)
         wks3.from_list('A', v_ideal, axis='X')
         wks3.from_list('B', i_ideal, "ideal power rectangle", axis='Y')
 
-        layer4 = graph.add_layer(type="noxy") # new layer, noax allows us to use the same axis as before
+        layer4 = graph.add_layer(type="noxy")  # new layer, noax allows us to use the same axis as before
         plot6 = graph[3].add_plot(wks3, colx="A", coly="B", type='line')
         op.lt_exec('Rescale; set %C -w 2000; set %C -d 1; set %c -cl color("#008800");')
-        
+
         # Add labels for Voc, Isc, ff
         # Format: label -a "x" "y" "label";
-        op.lt_exec('label -a "'+str(voc+voc/100)+'" "' + str(0)+'" "'+str(round(voc*1000))+' mV";')
-        op.lt_exec('label -a "'+str(0)+'" "' + str(isc)+'" "'+str(round(isc*1000))+' mA";')
-        op.lt_exec('label -a "'+str(vm/2)+'" "' + str(im/2)+'" "Fill Factor: \n '+str(round(ff,3))+'";')
-        
+        op.lt_exec('label -a "' + str(voc + voc / 100) + '" "' + str(0) + '" "' + str(round(voc * 1000)) + ' mV";')
+        op.lt_exec('label -a "' + str(0) + '" "' + str(isc) + '" "' + str(round(isc * 1000)) + ' mA";')
+        op.lt_exec('label -a "' + str(vm / 2) + '" "' + str(im / 2) + '" "Fill Factor: \n ' + str(round(ff, 3)) + '";')
+
         ######################################################################
-    
+
         op.wait()  # wait until operation is done
         op.wait('s', 0.05)  # wait further for graph to update
-        
+
         graph_num = op.graph_list()[0].get_str("name")
-        graph_strs.append("graph://" + graph_num + " - " + "IV: " + key) # creates hyperlink
+        graph_strs.append("graph://" + graph_num + " - " + "IV: " + key)  # creates hyperlink
         Graph_index += 1
 
     op.lt_exec('pe_cd /; pe_cd "SUMMARY";')  # moves to summary dir
-    wks_sum = op.new_sheet(lname="DATA SUMMARY ") # Creates sheet for summary
+    wks_sum = op.new_sheet(lname="DATA SUMMARY ")  # Creates sheet for summary
     # super hacky way to get more cols but like leave me alone
     for i in range(10):
         op.lt_exec('wks.addCol()')  # more hackyness, just forgive me
@@ -382,7 +380,7 @@ def origin_create_plots(db):
 
 if __name__ == '__main__':
     # Ask user for where the data lives:
-    datapath = r"C:\Users\akashdasgupta\Documents\temp" #input("Please enter the path to your data: ")
+    datapath = r"C:\Users\akashdasgupta\Documents\temp"  # input("Please enter the path to your data: ")
     print_logo()  # most important part of the code, without a doubt
 
     database = create_db(datapath)
