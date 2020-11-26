@@ -380,7 +380,7 @@ def origin_create_plots(db):
 
 if __name__ == '__main__':
     # Ask user for where the data lives:
-    datapath = r"C:\Users\akashdasgupta\Documents\temp"  # input("Please enter the path to your data: ")
+    datapath = input("Please enter the path to your data: ")
     print_logo()  # most important part of the code, without a doubt
 
     database = create_db(datapath)
