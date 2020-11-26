@@ -279,8 +279,9 @@ def origin_create_plots(db):
         wks.from_list('H', dy2, 'Current', 'A', "Dark, 2", axis='Y')
 
         # Create graph to plot into:
-        graph = op.new_graph(lname="IV: " + key, template=op.path('u') + 'a4_template.otpu')
+        #graph = op.new_graph(lname="IV: " + key, template=op.path('u') + 'a4_template.otpu')
         # !!! a custom template is used in line above, change it to "line" if this is missing!!!
+        graph = op.new_graph(lname="IV: " + key, 'a4_template.otpu')
 
         # First 2 (solid line) plots on base layer:
         plot1 = graph[0].add_plot(wks, coly="F", colx="E", type='line')
