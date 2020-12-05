@@ -235,6 +235,7 @@ def origin_create_plots(db):
 
         ######################################################################
         # Calculate the parameters:
+        area = float(db[key].get_id()["area"])
         voc = float(db[key].get_vt()[0][0])  # Open circuit voltage, from stability file
         isc = float(db[key].get_it()[1][0])  # Short circuit current, from stability file
 
@@ -258,25 +259,25 @@ def origin_create_plots(db):
 
         # Extract data from PixelData class for convenience:
         dx1 = db[key].get_dark_iv()[0][0]
-        dy1 = db[key].get_dark_iv()[0][1]
+        dy1 = [i *(1e3 / area) for i in db[key].get_dark_iv()[0][1]]
         dx2 = db[key].get_dark_iv()[1][0]
-        dy2 = db[key].get_dark_iv()[1][1]
+        dy2 = [i *(1e3 / area) for i in db[key].get_dark_iv()[1][1]]
 
         lx1 = db[key].get_light_iv()[0][0]
-        ly1 = db[key].get_light_iv()[0][1]
+        ly1 = [i *(1e3 / area) for i in db[key].get_light_iv()[0][1]]
         lx2 = db[key].get_light_iv()[1][0]
-        ly2 = db[key].get_light_iv()[1][1]
+        ly2 = [i *(1e3 / area) for i in db[key].get_light_iv()[1][1]]
 
         # Push lists into the cols on sheet, labels and type as appropriate:
         wks.from_list('A', lx1, 'Voltage', 'V', axis='X')
-        wks.from_list('B', ly1, 'Current', 'A', "Illuminated, 1", axis='Y')
+        wks.from_list('B', ly1, 'Current', 'mA/cm^2', "Illuminated, 1", axis='Y')
         wks.from_list('C', lx2, 'Voltage', 'V', axis='X')
-        wks.from_list('D', ly2, 'Current', 'A', "Illuminated, 2", axis='Y')
+        wks.from_list('D', ly2, 'Current', 'mA/cm^2', "Illuminated, 2", axis='Y')
 
         wks.from_list('E', dx1, 'Voltage', 'V', axis='X')
-        wks.from_list('F', dy1, 'Current', 'A', "Dark, 1", axis='Y')
+        wks.from_list('F', dy1, 'Current', 'mA/cm^2', "Dark, 1", axis='Y')
         wks.from_list('G', dx2, 'Voltage', 'V', axis='X')
-        wks.from_list('H', dy2, 'Current', 'A', "Dark, 2", axis='Y')
+        wks.from_list('H', dy2, 'Current', 'mA/cm^2', "Dark, 2", axis='Y')
 
         # Create graph to plot into:
         #graph = op.new_graph(lname="IV: " + key, template=op.path('u') + 'a4_template.otpu')
@@ -301,28 +302,28 @@ def origin_create_plots(db):
 
         # Ideal:
         voc_sweep = [voc * (i + 1) / 50 for i in range(50)]
-        isc_sweep = [isc * (i + 1) / 50 for i in range(50)]
+        isc_sweep = [isc * (1e3/area) * (i + 1) / 50 for i in range(50)]
         v_ideal = []
         i_ideal = []
 
         for voc_step in voc_sweep:
             v_ideal.append(voc_step)
-            i_ideal.append(isc)
+            i_ideal.append(isc* (1e3/area))
         for isc_step in isc_sweep:
             v_ideal.append(voc)
             i_ideal.append(isc_step)
 
         # Max power: 
         v_mppt_sweep = [vm * (i + 1) / 50 for i in range(50)]
-        i_mppt_sweep = [im * (i + 1) / 50 for i in range(50)]
+        i_mppt_sweep = [im * (1e3/area) * (i + 1) / 50 for i in range(50)]
         v_mppt_rect = []
         i_mppt_rect = []
 
         for voc_step in v_mppt_sweep:
             v_mppt_rect.append(voc_step)
-            i_mppt_rect.append(mpp_i)
+            i_mppt_rect.append(im* (1e3/area))
         for isc_step in i_mppt_sweep:
-            v_mppt_rect.append(mpp_v)
+            v_mppt_rect.append(vm)
             i_mppt_rect.append(isc_step)
 
         # Push to hidden worksheet:           
@@ -345,8 +346,8 @@ def origin_create_plots(db):
         # Add labels for Voc, Isc, ff
         # Format: label -a "x" "y" "label";
         op.lt_exec('label -a "' + str(voc + voc / 100) + '" "' + str(0) + '" "' + str(round(voc * 1000)) + ' mV";')
-        op.lt_exec('label -a "' + str(0) + '" "' + str(isc) + '" "' + str(round(isc * 1000)) + ' mA";')
-        op.lt_exec('label -a "' + str(vm / 2) + '" "' + str(im / 2) + '" "Fill Factor: \n ' + str(round(ff, 3)) + '";')
+        op.lt_exec('label -a "' + str(0) + '" "' + str(isc * 1e3/area) + '" "' + str(round(isc * 1000)) + ' mA";')
+        op.lt_exec('label -a "' + str(vm / 2) + '" "' + str(im * (1e3/area) / 2) + '" "Fill Factor: \n ' + str(round(ff, 3)) + '";')
 
         ######################################################################
 
