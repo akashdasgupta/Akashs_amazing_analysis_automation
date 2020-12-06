@@ -4,30 +4,44 @@ An analysis automation programme, written to process J/V curves of solar cells f
 
 * **For regular users:** The programme comes packedged in an install file. See the installation and useage instructions below.
 
-* **For Advanced users: ** The Python file requires the OriginPro module, which lives inside the embedded python environment which gets installed alongside OriginPro. If you want to run the script on its own without install, or wish to edit it you will have to run it through there. There is a required style file (.optu) aswell to make everything look pretty, this is required in the script, but this part can be commented away if required.
+* **For Advanced users:** The Python file requires the OriginPro module, which lives inside the embedded python environment which gets installed alongside OriginPro. If you want to run the script on its own without install, or wish to edit it you will have to run it through there. There is a required style file (.optu) aswell to make everything look pretty, this is required in the script, but this part can be commented away if required.
 
 ## Installation 
 
 * You MUST have Origin version 2021 or higher for this to work! For Oxford Physics users, this version is available on the physics Self Service:
 
 ![Latest Origin on self service](readme_images/self_service.png)
+
+* Download the "install.opx" file (on Github, click on file > click on "Raw" button > Save file. Note, Sometimes by default, it tries to save it as a .txt file, make sure the file is actuall of the extention .opx . On Windows, remove the .txt from the end of the file and change save type to 'all files' if this happens.)
 * Open Origin
 * Open the folder with the install file, and drag and drop the file into origin: 
 
+![Drag and drop install](readme_images/dragndrop.png)
+
 * The App is installed! It will appear on the app bar on the right:
+
+![Where the app appears](readme_images/a4_exists.png)
 
 ## Usage
 
 * Click on the app:  
 
+![click the app](readme_images/click_me.png)
+
 * Enter the path to the data files:  
 
-* There is a summary page with all the important parameters, and links to the J/V curves.:
+![Enter path](readme_images/path_enter.png)
+
+* There is a summary page with all the important parameters, and links to the J/V curves:
+
+![Summary of params](readme_images/summary.png)
 
 * Clicking on the J/V curves will open the page with the graph and the full data :
 
+![One graph](readme_images/one_graph.png)
+
 * You can return to the summary page from the project explorer: 
 
-
+![Return to summary](readme_images/return_sum.png)
 
 
