@@ -1,6 +1,6 @@
 # A^4 (Akashs amazing analysis automation!)
 
-An analysis automation programme, written to process J/V curves of solar cells from data obtained using the 'Wavelabs Solar Simulator, for the Henry J Snaith "Photovoltaic and Optoelectronic Device" Groups at Oxford university. The programme parses data files of the fromat outputed by custom software written by Grey Chhristoforo. 
+An analysis automation programme, written to process J/V curves of solar cells from data obtained using the 'Wavelabs Solar Simulator, for the Henry J Snaith "Photovoltaic and Optoelectronic Device" Groups at Oxford university. The programme parses data files of the fromat outputed by custom software written by Grey Chhristoforo. Thanks to Grey, Suhas Mahesh and Tino Lukas.
 
 * **For regular users:** The programme comes packedged in an install file. See the installation and useage instructions below.
 
@@ -12,7 +12,7 @@ An analysis automation programme, written to process J/V curves of solar cells f
 
 ![Latest Origin on self service](readme_images/self_service.png)
 
-* Download the "install.opx" file (on Github, click on file > click on "Raw" button > Save file. Note, Sometimes by default, it tries to save it as a .txt file, make sure the file is actuall of the extention .opx . On Windows, remove the .txt from the end of the file and change save type to 'all files' if this happens.)
+* Download the "install.opx" file (on Github, click on file > click on "Raw" button > Save file (Cntrl+S). Note, sometimes by default, it tries to save it as a .txt file, make sure the file is actuall of the extention .opx . On Windows, remove the .txt from the end of the file and change save type to 'all files' if this happens.)
 * Open Origin
 * Open the folder with the install file, and drag and drop the file into origin: 
 
