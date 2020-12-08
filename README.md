@@ -12,7 +12,12 @@ An analysis automation programme, written to process J/V curves of solar cells f
 
 ![Latest Origin on self service](readme_images/self_service.png)
 
-* Download the "install.opx" file (on Github, click on file > click on "Raw" button > Save file (Cntrl+S). Note, sometimes by default, it tries to save it as a .txt file, make sure the file is actuall of the extention .opx . On Windows, remove the .txt from the end of the file and change save type to 'all files' if this happens.)
+* Download the "install.opx" file. On github, you can download all the code in a zip file, and extract it, to get a folder with the install file:
+
+![Download files](readme_images/download_and_extract.png)
+
+![Latest Origin on self service](readme_images/self_service.png)
+
 * Open Origin
 * Open the folder with the install file, and drag and drop the file into origin: 
 
