@@ -1,6 +1,6 @@
 # A^4 (Akashs amazing analysis automation!)
 
-An analysis automation programme, written to process J/V curves of solar cells from data obtained using the 'Wavelabs Solar Simulator, for the Henry J Snaith "Photovoltaic and Optoelectronic Device" Groups at Oxford university. The programme parses data files of the fromat outputed by custom software written by Grey Chhristoforo. Thanks to Grey, Suhas Mahesh and Tino Lukas.
+An analysis automation programme, written to process J/V curves of solar cells from data obtained using the 'Wavelabs Solar Simulator, for the Henry J Snaith "Photovoltaic and Optoelectronic Device" Groups at Oxford university. The programme parses data files of the fromat outputed by custom software written by Grey Chhristoforo. Thanks to Grey, Suhas Mahesh, Tino Lukas and Robbie Oliver.
 
 * **For regular users:** The programme comes packedged in an install file. See the installation and useage instructions below.
 
