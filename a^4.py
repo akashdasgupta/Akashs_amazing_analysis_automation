@@ -236,6 +236,7 @@ def origin_create_plots(db):
         ######################################################################
         # Calculate the parameters:
         area = float(db[key].get_id()["area"])
+        dark_area = float(db[key].get_id()["dark_area"])
         voc = float(db[key].get_vt()[0][0])  # Open circuit voltage, from stability file
         isc = float(db[key].get_it()[1][0])  # Short circuit current, from stability file
 
@@ -259,9 +260,9 @@ def origin_create_plots(db):
 
         # Extract data from PixelData class for convenience:
         dx1 = db[key].get_dark_iv()[0][0]
-        dy1 = [i *(1e3 / area) for i in db[key].get_dark_iv()[0][1]]
+        dy1 = [i *(1e3 / dark_area) for i in db[key].get_dark_iv()[0][1]]
         dx2 = db[key].get_dark_iv()[1][0]
-        dy2 = [i *(1e3 / area) for i in db[key].get_dark_iv()[1][1]]
+        dy2 = [i *(1e3 / dark_area) for i in db[key].get_dark_iv()[1][1]]
 
         lx1 = db[key].get_light_iv()[0][0]
         ly1 = [i *(1e3 / area) for i in db[key].get_light_iv()[0][1]]
