@@ -16,8 +16,6 @@ An analysis automation programme, written to process J/V curves of solar cells f
 
 ![Download files](readme_images/download_and_extract.png)
 
-![Latest Origin on self service](readme_images/self_service.png)
-
 * Open Origin
 * Open the folder with the install file, and drag and drop the file into origin: 
 
