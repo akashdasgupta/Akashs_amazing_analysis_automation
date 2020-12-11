@@ -237,17 +237,21 @@ def origin_create_plots(db):
         # Calculate the parameters:
         area = float(db[key].get_id()["area"])
         dark_area = float(db[key].get_id()["dark_area"])
-        voc = float(db[key].get_vt()[0][0])  # Open circuit voltage, from stability file
-        isc = float(db[key].get_it()[1][0])  # Short circuit current, from stability file
+        voc = float(db[key].get_vt()[0][-1])  # Open circuit voltage, from stability file
+        isc = float(db[key].get_it()[1][-1])  # Short circuit current, from stability file
 
         # Fill factor: Finds max power, and vm, im in the process, takes ratio of that to voc*isc:
         mpp_i = db[key].get_mppt()[1]
         mpp_v = db[key].get_mppt()[0]
-        mpp = max([mpp_i[i] * mpp_v[i] for i in range(len(mpp_v))])
-        for i in range(len(mpp_i)):
-            if mpp_i[i] * mpp_v[i] == mpp:
-                vm = mpp_v[i]
-                im = mpp_i[i]
+        # mpp = max([mpp_i[i] * mpp_v[i] for i in range(len(mpp_v))])
+        # for i in range(len(mpp_i)):
+        #     if mpp_i[i] * mpp_v[i] == mpp:
+        #         vm = mpp_v[i]
+        #         im = mpp_i[i]
+        im = mpp_i[-1]
+        vm = mpp_v[-1]
+        mpp = mpp_i[-1] * mpp_v[-1]
+        
         ff = mpp / (voc * isc)
 
         voc_list.append(voc)
