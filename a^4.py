@@ -12,10 +12,13 @@ import csv
 
 try:
     import originpro as op
+    # Copies the template we are using to the user files (thanks Robbie!): 
+    if not os.path.isfile(op.path('u')+r"/a^4/a4_template.otpu"):
+        # %@A is were the app lives, %Y is the user folder
+        op.lt_exex('file -c "%@Aa^4\a4_template.otpu" "%Ya4_template.otpu"')
 except ModuleNotFoundError:
     print("I couldn't find Origin! I guess you are debuging, which is cool." +
           "\nJust remember, if you have not commented out all the Origin garbage, I will crash...")
-
 
 class PixelData:
     """
@@ -243,14 +246,22 @@ def origin_create_plots(db):
         # Fill factor: Finds max power, and vm, im in the process, takes ratio of that to voc*isc:
         mpp_i = db[key].get_mppt()[1]
         mpp_v = db[key].get_mppt()[0]
-        # mpp = max([mpp_i[i] * mpp_v[i] for i in range(len(mpp_v))])
+        mpp = min([mpp_i[i] * mpp_v[i] for i in range(len(mpp_v))])
         # for i in range(len(mpp_i)):
         #     if mpp_i[i] * mpp_v[i] == mpp:
         #         vm = mpp_v[i]
         #         im = mpp_i[i]
-        im = mpp_i[-1]
-        vm = mpp_v[-1]
-        mpp = mpp_i[-1] * mpp_v[-1]
+        
+        im = 0
+        vm = 0
+        mpp = 0
+        for i in range(5):
+            im += mpp_i[-i-1]
+            vm += mpp_v[-i-1]
+            mpp += mpp_i[-i-1] * mpp_v[-1]
+        im /= 5
+        vm /= 5
+        mpp /= 5
         
         ff = mpp / (voc * isc)
 
@@ -351,7 +362,7 @@ def origin_create_plots(db):
         # Add labels for Voc, Isc, ff
         # Format: label -a "x" "y" "label";
         op.lt_exec('label -a "' + str(voc + voc / 100) + '" "' + str(0) + '" "' + str(round(voc * 1000)) + ' mV";')
-        op.lt_exec('label -a "' + str(0) + '" "' + str(isc * 1e3/area) + '" "' + str(round(isc * 1000)) + ' mA";')
+        op.lt_exec('label -a "' + str(0) + '" "' + str(isc * 1e3/area) + '" "' + str(round(isc  * 1e3/area)) + ' mAcm^-2";')
         op.lt_exec('label -a "' + str(vm / 2) + '" "' + str(im * (1e3/area) / 2) + '" "Fill Factor: \n ' + str(round(ff, 3)) + '";')
 
         ######################################################################
