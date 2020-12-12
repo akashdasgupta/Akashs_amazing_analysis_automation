@@ -15,7 +15,7 @@ try:
     # Copies the template we are using to the user files (thanks Robbie!): 
     if not os.path.isfile(op.path('u')+r"/a^4/a4_template.otpu"):
         # %@A is were the app lives, %Y is the user folder
-        op.lt_exex('file -c "%@Aa^4\a4_template.otpu" "%Ya4_template.otpu"')
+        op.lt_exec(r'file -c "%@Aa^4\a4_template.otpu" "%Ya4_template.otpu"')
 except ModuleNotFoundError:
     print("I couldn't find Origin! I guess you are debuging, which is cool." +
           "\nJust remember, if you have not commented out all the Origin garbage, I will crash...")
@@ -296,9 +296,8 @@ def origin_create_plots(db):
         wks.from_list('H', dy2, 'Current', 'mA/cm^2', "Dark, 2", axis='Y')
 
         # Create graph to plot into:
-        #graph = op.new_graph(lname="IV: " + key, template=op.path('u') + 'a4_template.otpu')
-        # !!! a custom template is used in line above, change it to "line" if this is missing!!!
         graph = op.new_graph(lname="IV: " + key, template='a4_template.otpu')
+        # !!! a custom template is used in line above, change it to "line" if this is missing!!!
 
         # First 2 (solid line) plots on base layer:
         plot1 = graph[0].add_plot(wks, coly="F", colx="E", type='line')
