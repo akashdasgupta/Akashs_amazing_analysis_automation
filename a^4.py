@@ -117,7 +117,7 @@ def find_ext(ext, path):
 
 
 def find_starts_with(starts_with, path):
-    """Returns list of files ending with some extention"""
+    """Returns list of files Starts with with some phrase"""
     file_paths = []
     # Loops over files, adds them to blank:
     for root, dirs, files in os.walk(path):
@@ -147,6 +147,23 @@ Thanks for running my software. For help: akash.dasgupta@physics.ox.ac.uk
 
 
 def create_db(path):
+    """
+    For a given path with wavelabs data, will open all the data files (.tsv),
+    sort them by device, and push all data for the same device in a PixelData
+    instance.
+    
+    Parameters
+    ----------
+    path : str
+        Path to where the data lives.
+
+    Returns
+    -------
+    db : dict
+        Dictionary with all the data. Key = Device id string, value= PixelData
+        instance
+
+    """
     db = {}  # This dude will hold all the PixelData instances
 
     csv_file_path = find_ext('.csv', path)[0]  # Assuming only 1 csv
@@ -212,6 +229,18 @@ def create_db(path):
 
 
 def origin_create_plots(db):
+    """
+    For each device in a database, plots an J/V curve in a new folder.
+    Calculates Open circuit voltage, short circuit current, voltage and current
+    at max power point and  fill factor, puts it in a summary folder, and links
+    the j/v curves to each row in the summary matrix
+
+    Parameters
+    ----------
+    db : dict
+        Database of PixelData instances
+
+    """
     # Creates the folders needed:
     op.lt_exec('pe_cd /; pe_mkdir "SUMMARY"; pe_cd /;pe_mkdir "FULL_IV_CURVES";')
 
@@ -247,10 +276,6 @@ def origin_create_plots(db):
         mpp_i = db[key].get_mppt()[1]
         mpp_v = db[key].get_mppt()[0]
         mpp = min([mpp_i[i] * mpp_v[i] for i in range(len(mpp_v))])
-        # for i in range(len(mpp_i)):
-        #     if mpp_i[i] * mpp_v[i] == mpp:
-        #         vm = mpp_v[i]
-        #         im = mpp_i[i]
         
         im = 0
         vm = 0
