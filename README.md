@@ -25,6 +25,8 @@ An analysis automation programme, written to process J/V curves of solar cells f
 
 ![Where the app appears](readme_images/a4_exists.png)
 
+* IMPORTANT: YOU MUST CLOSE AND OPEN THE APP ONCE AFTER INSTALL! Otherwise it dosen't properly update the python package lists.
+
 ## Usage
 
 * Click on the app:  
