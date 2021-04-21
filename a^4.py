@@ -345,7 +345,10 @@ def origin_create_plots(db):
         ff_st_list.append(ff_st)
         vm_st_list.append(vm_st)
         im_st_list.append(im_st)
-        pce_st_list.append(abs(mpp_st))
+        try:
+            pce_st_list.append(abs(mpp_st))
+        except TypeError:
+            pce_st_list.append(mpp_st)
 
         voc_list.append(float(voc))
         isc_list.append(float(isc))
