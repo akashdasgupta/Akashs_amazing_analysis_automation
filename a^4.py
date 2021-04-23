@@ -407,11 +407,11 @@ def origin_create_plots(db):
     wks_sum.from_list('C', [i['mux_index'] for i in ids], 'Device number', axis='X')
     # Data cols:
     wks_sum.from_list('D', voc_list, 'V_oc', 'V', axis='Y')
-    wks_sum.from_list('E', isc_list, 'I_sc', 'A', axis='Y')
+    wks_sum.from_list('E', isc_list, 'I_sc', 'mA/cm^-2', axis='Y')
     wks_sum.from_list('F', pce_list, 'Max power point', 'mWcm^-2', axis='Y')
     wks_sum.from_list('G', ff_list, 'Fill Factor', '', axis='Y')
     wks_sum.from_list('H', vm_list, 'V_mp', 'V', axis='Y')
-    wks_sum.from_list('I', im_list, 'I_mp', 'A', axis='Y')
+    wks_sum.from_list('I', im_list, 'I_mp', 'mA/cm^-2', axis='Y')
 
     # Get ready....here comes...MORE HACKYNESS
     letters = ['J','K','L','M','N','O','P']
