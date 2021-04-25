@@ -305,9 +305,9 @@ def origin_create_plots(db):
         except:
             ff_st = None
   
-
-        j_from_v = interp1d(lx1, ly1)
-        v_from_j = interp1d(ly1, lx1)
+        # Bound error is false, for really bad stuff it'll output NaN (Thanks Joel!)
+        j_from_v = interp1d(lx1, ly1,bounds_error=False)
+        v_from_j = interp1d(ly1, lx1, bounds_error=False)
         voc = v_from_j(0)
         isc = j_from_v(0)
 
