@@ -338,7 +338,7 @@ def origin_create_plots(db):
         except:
             pass
             
-        ff = (vm*im)/(voc*isc)
+        ff = abs((vm*im)/(voc*isc))
 
 
         voc_st_list.append(voc_st)
