@@ -273,7 +273,8 @@ def origin_create_plots(db):
         try:
             ly1 = [i *(1e3 / area) for i in db[key].get_light_iv()[0][1]]
         except:
-            raise ValueError("You need to have at least 1 light JV!!!")
+            print(f"Didn't find {key}, moving on...")
+            continue
         lx2 = db[key].get_light_iv()[1][0]
         try:
             ly2 = [i *(1e3 / area) for i in db[key].get_light_iv()[1][1]]
