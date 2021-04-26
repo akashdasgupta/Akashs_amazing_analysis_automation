@@ -359,15 +359,30 @@ def origin_create_plots(db):
         ids.append(db[key].get_id())
         ######################################################################
         # Push lists into the cols on sheet, labels and type as appropriate:
-        wks.from_list('A', lx1, 'Voltage', 'V', axis='X')
-        wks.from_list('B', ly1, 'Current', 'mA/cm^2', "Illuminated, 1", axis='Y')
-        wks.from_list('C', lx2, 'Voltage', 'V', axis='X')
-        wks.from_list('D', ly2, 'Current', 'mA/cm^2', "Illuminated, 2", axis='Y')
+        letters = ["A", "B", "C", "D", "E", "F", "G", "H"]
+        
+        counter = 0
+        if ly1:
+            wks.from_list(letters[counter], lx1, 'Voltage', 'V', axis='X')
+            counter += 1
+            wks.from_list(letters[counter], ly1, 'Current', 'mA/cm^2', "Illuminated, 1", axis='Y')
+            counter += 1
+        if ly2:
+            wks.from_list(letters[counter], lx2, 'Voltage', 'V', axis='X')
+            counter += 1
+            wks.from_list(letters[counter], ly2, 'Current', 'mA/cm^2', "Illuminated, 2", axis='Y')
+            counter += 1
 
-        wks.from_list('E', dx1, 'Voltage', 'V', axis='X')
-        wks.from_list('F', dy1, 'Current', 'mA/cm^2', "Dark, 1", axis='Y')
-        wks.from_list('G', dx2, 'Voltage', 'V', axis='X')
-        wks.from_list('H', dy2, 'Current', 'mA/cm^2', "Dark, 2", axis='Y')
+        if dy1:
+            wks.from_list(letters[counter], dx1, 'Voltage', 'V', axis='X')
+            counter += 1
+            wks.from_list(letters[counter], dy1, 'Current', 'mA/cm^2', "Dark, 1", axis='Y')
+            counter += 1
+        if dy2:
+            wks.from_list(letters[counter], dx2, 'Voltage', 'V', axis='X')
+            counter += 1
+            wks.from_list(letters[counter], dy2, 'Current', 'mA/cm^2', "Dark, 2", axis='Y')
+            counter += 1
 
         # Create graph to plot into:
         #graph = op.new_graph(lname="IV: " + key, template=op.path('u') + 'a4_template.otpu')
