@@ -312,23 +312,31 @@ def origin_create_plots(db):
         voc = v_from_j(0)
         isc = j_from_v(0)
 
-        temp_v = np.arange(min(lx1), max(lx1), (max(lx1)-min(lx1)/10000))
-        mpp_index = np.argmin(temp_v*j_from_v(temp_v))
-        vm = temp_v[mpp_index]
-        im = j_from_v(temp_v[mpp_index])
+        # Catches if current compliance caused device to not span full quadrent:
+        try:
+            temp_v = np.arange(min(lx1), max(lx1), (max(lx1)-min(lx1)/10000))
+            mpp_index = np.argmin(temp_v*j_from_v(temp_v))
+            vm = temp_v[mpp_index]
+            im = j_from_v(temp_v[mpp_index])
+        except ValueError: 
+            vm = np.nan
+            im = np.nan
 
         # Check second curve in case it's better:
 
         try:
-            j_from_v2 = interp1d(lx2, ly2)
-            v_from_j2 = interp1d(ly2, lx2)
+            j_from_v2 = interp1d(lx2, ly2, bounds_error=False)
+            v_from_j2 = interp1d(ly2, lx2, bounds_error=False)
             voc2 = v_from_j2(0)
             isc2 = j_from_v2(0)
-
-            temp_v2 = np.arange(min(lx2), max(lx2), (max(lx2)-min(lx2)/10000))
-            mpp_index2 = np.argmin(temp_v2*j_from_v2(temp_v2))
-            vm2 = temp_v2[mpp_index2]
-            im2 = j_from_v2(temp_v2[mpp_index2])
+            try:
+                temp_v2 = np.arange(min(lx2), max(lx2), (max(lx2)-min(lx2)/10000))
+                mpp_index2 = np.argmin(temp_v2*j_from_v2(temp_v2))
+                vm2 = temp_v2[mpp_index2]
+                im2 = j_from_v2(temp_v2[mpp_index2])
+            except ValueError: 
+                vm2 = np.nan
+                im2 = np.nan
 
             if im*vm > im2*vm2:
                 voc = voc2
