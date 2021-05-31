@@ -19,6 +19,9 @@ try:
     if not os.path.isfile(op.path('u')+r"/a^4/a4_template.otpu"):
         # %@A is were the app lives, %Y is the user folder
         op.lt_exec(r'file -c "%@Aa^4\a4_template.otpu" "%Ya4_template.otpu"')
+    if not os.path.isfile(op.path('u')+r"/a^4/a4_MPPT.otpu"):
+        # %@A is were the app lives, %Y is the user folder
+        op.lt_exec(r'file -c "%@Aa^4\a4_MPPT.otpu" "%Ya4_MPPT.otpu"')
 except ModuleNotFoundError:
     print("I couldn't find Origin! I guess you are debuging, which is cool." +
           "\nJust remember, if you have not commented out all the Origin garbage, I will crash...")
@@ -396,7 +399,7 @@ def origin_create_plots(db):
         # Create graph to plot into:
         #graph = op.new_graph(lname="IV: " + key, template=op.path('u') + 'a4_template.otpu')
         # !!! a custom template is used in line above, change it to "line" if this is missing!!!
-        graph = op.new_graph(lname="IV: " + key, template='a4_template.otpu')
+        graph = op.new_graph(lname="JV: " + key, template='a4_template.otpu')
 
         # First 2 (solid line) plots on base layer:
         plot1 = graph[0].add_plot(wks, coly="F", colx="E", type='line')
@@ -409,7 +412,52 @@ def origin_create_plots(db):
         plot4 = graph[1].add_plot(wks, coly="D", colx="C", type='line')
         # Rescales axis, sets linewidth up, Changes linestyle to dash, sets up autocolour:
         op.lt_exec("Rescale; set %C -w 2000; layer -g; set %C -d 1")
+        ######################################################################
+        # Max power plots (By request of mike)
+        
+        try:
+            i_mppt = abs(np.array(db[key].get_mppt()[1])* (1e3/area))
+            v_mppt = abs(np.array(db[key].get_mppt()[0]))
+            p_mppt = v_mppt * i_mppt 
+            t_mppt = np.array(db[key].get_mppt()[2])
+            wks_mpp = op.new_sheet(lname="MPPT DATA for " + key)  # Long name is linked to key
+            # more like maxium hackiness point tracking...
+            for i in range(10):
+                op.lt_exec('wks.addCol()')
+            
+            wks_mpp.from_list('A', t_mppt, 'Time', 's', axis='X')
+            wks_mpp.from_list('B', v_mppt, 'Voltage', 'V', axis='Y')
+            wks_mpp.from_list('C', i_mppt, 'Current', 'mA/cm^2', axis='Y')
+            wks_mpp.from_list('D', p_mppt, 'Power Density', 'mW/cm^2', axis='Y')
 
+            
+            # Add data plots onto the graph
+            mppt_graph = op.new_graph(lname="MPPT: " + key,template='a4_MPPT') 
+            
+            mpp_letters= ['B', 'C', 'D']
+            # Loop over layers and worksheets to add individual curve.
+            mpptlayer1 = mppt_graph[0]
+            plotmppt1 = mpptlayer1.add_plot(wks_mpp, coly='B', colx="A", type='y')
+            mpptlayer1.rescale()
+            
+            mpptlayer2 = mppt_graph[1]
+            plotmppt2 = mpptlayer2.add_plot(wks_mpp, coly='C', colx="A",type='y')
+            mpptlayer2.rescale()
+            
+            mpptlayer3 = mppt_graph[2]
+            plotmppt3 = mpptlayer3.add_plot(wks_mpp, coly="D", colx="A",type='y')
+            mpptlayer3.rescale()
+        except:
+            pass
+
+  
+        
+                #wks = op.new_sheet(lname="DATA for " + key)  # Long name is linked to key
+        ## super hacky way to get more cols but like leave me alone
+        #for i in range(10):
+            #op.lt_exec('wks.addCol()'
+        
+        
 
         ######################################################################
 
