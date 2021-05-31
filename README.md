@@ -37,7 +37,7 @@ An analysis automation programme, written to process J/V curves of solar cells f
 
 ![Enter path](readme_images/path_enter.png)
 
-* There is a summary page with all the important parameters, and links to the J/V curves and MPPT plots. You can preview them by hovering above:
+* There is a summary page with all the important parameters, and links to the J/V curves and MPPT plots. You can preview them by hovering above them:
 
 ![Summary of params](readme_images/summary.png)
 
