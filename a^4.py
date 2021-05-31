@@ -222,6 +222,7 @@ def create_db(path):
 
 
 def origin_create_plots(db):
+    print("Plotting... (this may take a few sec)")
     # Creates the folders needed:
     op.lt_exec('pe_cd /; pe_mkdir "SUMMARY"; pe_cd /;pe_mkdir "FULL_IV_CURVES";')
 
@@ -235,19 +236,19 @@ def origin_create_plots(db):
     # stabalised values:
     voc_st_list = []  # Open circuit voltage
     isc_st_list = []  # Short circuit current
-    ff_st_list = []  # Fill factor
     vm_st_list = []  # Voltage at max power
     im_st_list = []  # Current at max power
     pce_st_list = []
 
     ids = []  # The ID dict (for info cols)
     graph_strs = []  # Holds hyperlinks to plotted graphs
+    mppt_graph_strs = []
 
     Graph_index = 1  # Keep track of how many graphs, needed for the hyperlinking
     for key in db.keys():
         # move into the full iv curve dir, create new dir per pixel:
         op.lt_exec('pe_cd /; pe_cd "FULL_IV_CURVES"; pe_mkdir "' + key + '"; pe_cd "' + key + '"')
-        print("NOW PLOTING: Graph" + str(Graph_index) + " - " + key)
+        #print("NOW PLOTING: Graph" + str(Graph_index) + " - " + key)
 
         # Create worksheet:
         wks = op.new_sheet(lname="DATA for " + key)  # Long name is linked to key
@@ -304,10 +305,6 @@ def origin_create_plots(db):
             mpp_st = vm_st * im_st 
         except:
             im_st, vm_st, mpp_st = (None, None, None)
-        try:
-            ff_st = mpp_st/ (voc_st * isc_st * 10)
-        except:
-            ff_st = None
   
         # Bound error is false, for really bad stuff it'll output NaN (Thanks Joel!)
         j_from_v = interp1d(lx1, ly1,bounds_error=False)
@@ -354,7 +351,6 @@ def origin_create_plots(db):
 
         voc_st_list.append(voc_st)
         isc_st_list.append(isc_st)
-        ff_st_list.append(ff_st)
         vm_st_list.append(vm_st)
         im_st_list.append(im_st)
         try:
@@ -412,6 +408,12 @@ def origin_create_plots(db):
         plot4 = graph[1].add_plot(wks, coly="D", colx="C", type='line')
         # Rescales axis, sets linewidth up, Changes linestyle to dash, sets up autocolour:
         op.lt_exec("Rescale; set %C -w 2000; layer -g; set %C -d 1")
+        
+        #op.wait()  # wait until operation is done
+        #op.wait('s', 0.05)  # wait further for graph to update
+
+        graph_num = op.graph_list()[0].get_str("name")
+        graph_strs.append("graph://" + graph_num + " - " + "IV: " + key)  # creates hyperlink
         ######################################################################
         # Max power plots (By request of mike)
         
@@ -447,25 +449,15 @@ def origin_create_plots(db):
             mpptlayer3 = mppt_graph[2]
             plotmppt3 = mpptlayer3.add_plot(wks_mpp, coly="D", colx="A",type='y')
             mpptlayer3.rescale()
+            
+            mppt_graph_num = op.graph_list()[1].get_str("name")
+            mppt_graph_strs.append("graph://" + mppt_graph_num + " - " + "MPPT: " + key)
+        
         except:
-            pass
+            mppt_graph_strs = [None]
 
-  
-        
-                #wks = op.new_sheet(lname="DATA for " + key)  # Long name is linked to key
-        ## super hacky way to get more cols but like leave me alone
-        #for i in range(10):
-            #op.lt_exec('wks.addCol()'
-        
-        
-
-        ######################################################################
-
-        op.wait()  # wait until operation is done
-        op.wait('s', 0.05)  # wait further for graph to update
-
-        graph_num = op.graph_list()[0].get_str("name")
-        graph_strs.append("graph://" + graph_num + " - " + "IV: " + key)  # creates hyperlink
+        ######################################################################      
+        op.wait()
         Graph_index += 1
 
     op.lt_exec('pe_cd /; pe_cd "SUMMARY";')  # moves to summary dir
@@ -486,30 +478,32 @@ def origin_create_plots(db):
     wks_sum.from_list('I', im_list, 'I_mp', 'mA/cm^-2', axis='Y')
 
     # Get ready....here comes...MORE HACKYNESS
-    letters = ['J','K','L','M','N','O','P']
+    letters = ['J','K','L','M','N','O','P','Q','R','S']
     letter_counter = 0
     
     if voc_st_list[0]:
-        wks_sum.from_list(letters[letter_counter], voc_st_list, 'V_oc (STABALISED)', 'V', axis='Y')
+        wks_sum.from_list(letters[letter_counter], voc_st_list, 'V (STABALISED)', 'V', axis='Y')
         letter_counter += 1
     if isc_st_list[0]:
-        wks_sum.from_list(letters[letter_counter], isc_st_list, 'I_sc (STABALISED)', 'A', axis='Y')
+        wks_sum.from_list(letters[letter_counter], isc_st_list, 'I (STABALISED)', 'mA/cm^2', axis='Y')
         letter_counter += 1
     if pce_list[0]:
-        wks_sum.from_list(letters[letter_counter], pce_st_list, 'Max power point (STABALISED)', 'mWcm^-2', axis='Y')
-        letter_counter += 1
-    if ff_st_list[0]:
-        wks_sum.from_list(letters[letter_counter], ff_st_list, 'Fill Factor (STABALISED)', 'W', axis='Y')
+        wks_sum.from_list(letters[letter_counter], pce_st_list, 'Max power point (MPPT)', 'mWcm^-2', axis='Y')
         letter_counter += 1
     if vm_st_list[0]:
-        wks_sum.from_list(letters[letter_counter], vm_st_list, 'V_mp (STABALISED)', 'V', axis='Y')
+        wks_sum.from_list(letters[letter_counter], vm_st_list, 'V_mp (MPPT)', 'V', axis='Y')
         letter_counter += 1
     if im_st_list[0]:
-        wks_sum.from_list(letters[letter_counter], im_st_list, 'I_mp (STABALISED)', 'A', axis='Y')
+        wks_sum.from_list(letters[letter_counter], im_st_list, 'I_mp (MPPT)', 'mA/cm^2', axis='Y')
         letter_counter += 1
     # Hyperlinks to graphs:
     wks_sum.from_list(letters[letter_counter], graph_strs, 'IV curve', comments='CLICK the cell', axis='Z')
-
+    letter_counter += 1
+    if mppt_graph_strs[0]:
+        wks_sum.from_list(letters[letter_counter], mppt_graph_strs, 'MPPT', comments='CLICK the cell', axis='Z')
+    for i in range(len(graph_strs)):
+        op.lt_exec(f"wrowheight [{i+1}] (3);") 
+    
     return True
 
 
