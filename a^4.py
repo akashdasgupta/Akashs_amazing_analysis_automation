@@ -487,7 +487,7 @@ def origin_create_plots(db):
     if isc_st_list[0]:
         wks_sum.from_list(letters[letter_counter], isc_st_list, 'I (STABALISED)', 'mA/cm^2', axis='Y')
         letter_counter += 1
-    if pce_list[0]:
+    if pce_st_list[0]:
         wks_sum.from_list(letters[letter_counter], pce_st_list, 'Max power point (MPPT)', 'mWcm^-2', axis='Y')
         letter_counter += 1
     if vm_st_list[0]:
