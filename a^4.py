@@ -315,7 +315,7 @@ def origin_create_plots(db):
         # Catches if current compliance caused device to not span full quadrent:
         try:
             temp_v = np.arange(min(lx1), max(lx1), (max(lx1)-min(lx1))/10000)
-            mpp_index = np.argmin(temp_v*j_from_v(temp_v))
+            mpp_index = np.nanargmin(temp_v*j_from_v(temp_v)) # nanargmin because sometimes NaNs come from interpolation (Thanks Melissa!)
             vm = temp_v[mpp_index]
             im = j_from_v(temp_v[mpp_index])
         except ValueError: 
@@ -331,7 +331,7 @@ def origin_create_plots(db):
             isc2 = j_from_v2(0)
             try:
                 temp_v2 = np.arange(min(lx2), max(lx2), (max(lx2)-min(lx2))/10000)
-                mpp_index2 = np.argmin(temp_v2*j_from_v2(temp_v2))
+                mpp_index2 = np.nanargmin(temp_v2*j_from_v2(temp_v2)) # nanargmin because sometimes NaNs come from interpolation (Thanks Melissa!)
                 vm2 = temp_v2[mpp_index2]
                 im2 = j_from_v2(temp_v2[mpp_index2])
             except ValueError: 
@@ -422,12 +422,13 @@ def origin_create_plots(db):
             v_mppt = abs(np.array(db[key].get_mppt()[0]))
             p_mppt = v_mppt * i_mppt 
             t_mppt = np.array(db[key].get_mppt()[2])
+            t_mppt_scaled = [i-t_mppt[0] for i in t_mppt]
             wks_mpp = op.new_sheet(lname="MPPT DATA for " + key)  # Long name is linked to key
             # more like maxium hackiness point tracking...
             for i in range(10):
                 op.lt_exec('wks.addCol()')
             
-            wks_mpp.from_list('A', t_mppt, 'Time', 's', axis='X')
+            wks_mpp.from_list('A', t_mppt_scaled, 'Time', 's', axis='X')
             wks_mpp.from_list('B', v_mppt, 'Voltage', 'V', axis='Y')
             wks_mpp.from_list('C', i_mppt, 'Current', 'mA/cm^2', axis='Y')
             wks_mpp.from_list('D', p_mppt, 'Power Density', 'mW/cm^2', axis='Y')
