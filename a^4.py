@@ -11,6 +11,8 @@ import os
 import csv
 from scipy.interpolate import interp1d
 import numpy as np 
+import string
+
 
 
 try:
@@ -34,8 +36,7 @@ class PixelData:
     """
 
     def __init__(self, sys_label=None, user_label=None, substrate=None,
-                 layout=None, area=None, dark_area=None, mux_index=None,
-                 weather=None):
+                 layout=None, area=None, dark_area=None, mux_index=None):
         """
         Initial class constructor. On creation can populate the id dict with all the parameters in the csv file. Data
         not initially added, but empty lists where they would go are created.
@@ -54,8 +55,9 @@ class PixelData:
                      "layout": layout,
                      "area": area,
                      "dark_area": dark_area,
-                     "mux_index": mux_index,
-                     "weather": weather}  # This will hold all the parameters
+                     "mux_index": mux_index}  # This will hold all the parameters
+        
+        self.__vars = {}
 
         # Format: V,I,time, stat
         self.__dark_iv_1 = [None, None, None, None]
@@ -90,6 +92,9 @@ class PixelData:
 
     def set_mppt(self, I=None, V=None, t=None, stat=None):
         self.__mppt = [V, I, t, stat]
+        
+    def append_var(self, key, value):
+        self.__vars[key] = value
 
     def get_id(self):
         return self.__id
@@ -108,7 +113,21 @@ class PixelData:
 
     def get_mppt(self):
         return self.__mppt
+    
+    def get_var(self):
+        return self.__vars
 
+    
+letter_string = string.ascii_uppercase
+letter_list = list(letter_string) 
+def letter_i(index):
+    alphabet_length = len(letter_list)
+    if index <= alphabet_length:
+        return index-1
+    else:
+        first_letter = letter_list[(index%alphabet_length)-1]
+        second_letter = [index-(index%alphabet_length)-1]
+        return first_letter + second_letter
 
 def find_ext(ext, path):
     """Returns list of files ending with some extention"""
@@ -159,10 +178,14 @@ def create_db(path):
     # Opens CSV and extracts the parameters for each run:
     with open(csv_file_path, 'r') as file:
         reader = csv.reader(file)
-        skip = True
-        for row in reader:
-            if skip:
-                skip = False
+
+        for rownum, row in enumerate(reader):
+            if rownum == 0:
+                extra_vars = []
+                for i in range(len(row)):
+                    if row[-1-i] == 'mux_index':
+                        break
+                    extra_vars.append(row[-1-i])
                 continue
             # The key is actually also how the filename starts:
             if row[2] == '':
@@ -175,9 +198,10 @@ def create_db(path):
                                     row[4],
                                     row[5],
                                     row[6],
-                                    row[7],
-                                    row[8], )  # Populates ID
+                                    row[7] )  # Populates ID
     # Loops over each pixel, sweep through and mines the data:
+            for i, varkey in enumerate(reversed(extra_vars)):
+                db[key_str].append_var(varkey, row[8+i])
     for key in db.keys():
         files_in_class = find_starts_with(key, path)
         for filename in files_in_class:
@@ -233,6 +257,14 @@ def origin_create_plots(db):
     vm_list = []  # Voltage at max power
     im_list = []  # Current at max power
     pce_list = []
+    
+    voc_list2 = []  # Open circuit voltage
+    isc_list2 = []  # Short circuit current
+    ff_list2 = []  # Fill factor
+    vm_list2 = []  # Voltage at max power
+    im_list2 = []  # Current at max power
+    pce_list2 = []
+
     # stabalised values:
     voc_st_list = []  # Open circuit voltage
     isc_st_list = []  # Short circuit current
@@ -241,6 +273,7 @@ def origin_create_plots(db):
     pce_st_list = []
 
     ids = []  # The ID dict (for info cols)
+    vars = [] # variables
     graph_strs = []  # Holds hyperlinks to plotted graphs
     mppt_graph_strs = []
 
@@ -337,16 +370,11 @@ def origin_create_plots(db):
             except ValueError: 
                 vm2 = np.nan
                 im2 = np.nan
-
-            if im*vm > im2*vm2:
-                voc = voc2
-                isc = isc2
-                im = im2
-                vm = vm2
         except:
             pass
             
         ff = abs((vm*im)/(voc*isc))
+        ff2 = abs((vm2*im2)/(voc2*isc2))
 
 
         voc_st_list.append(voc_st)
@@ -358,38 +386,47 @@ def origin_create_plots(db):
         except TypeError:
             pce_st_list.append(mpp_st)
 
+        voc_list2.append(float(voc2))
+        isc_list2.append(float(isc2))
+        ff_list2.append(float(ff2))
+        vm_list2.append(float(vm2))
+        im_list2.append(float(im2))
+        pce_list2.append(abs(float(vm2*im2)))
+        
         voc_list.append(float(voc))
         isc_list.append(float(isc))
         ff_list.append(float(ff))
         vm_list.append(float(vm))
         im_list.append(float(im))
         pce_list.append(abs(float(vm*im)))
+              
         ids.append(db[key].get_id())
+        vars.append(db[key].get_var())
+        
         ######################################################################
         # Push lists into the cols on sheet, labels and type as appropriate:
-        letters = ["A", "B", "C", "D", "E", "F", "G", "H"]
         
-        counter = 0
+        counter = 1
         if ly1:
-            wks.from_list(letters[counter], lx1, 'Voltage', 'V', axis='X')
+            wks.from_list(letter_i(counter), lx1, 'Voltage', 'V', axis='X')
             counter += 1
-            wks.from_list(letters[counter], ly1, 'Current', 'mA/cm^2', "Illuminated, 1", axis='Y')
+            wks.from_list(letter_i(counter), ly1, 'Current', 'mA/cm^2', "Illuminated, 1", axis='Y')
             counter += 1
         if ly2:
-            wks.from_list(letters[counter], lx2, 'Voltage', 'V', axis='X')
+            wks.from_list(letter_i(counter), lx2, 'Voltage', 'V', axis='X')
             counter += 1
-            wks.from_list(letters[counter], ly2, 'Current', 'mA/cm^2', "Illuminated, 2", axis='Y')
+            wks.from_list(letter_i(counter), ly2, 'Current', 'mA/cm^2', "Illuminated, 2", axis='Y')
             counter += 1
 
         if dy1:
-            wks.from_list(letters[counter], dx1, 'Voltage', 'V', axis='X')
+            wks.from_list(letter_i(counter), dx1, 'Voltage', 'V', axis='X')
             counter += 1
-            wks.from_list(letters[counter], dy1, 'Current', 'mA/cm^2', "Dark, 1", axis='Y')
+            wks.from_list(letter_i(counter), dy1, 'Current', 'mA/cm^2', "Dark, 1", axis='Y')
             counter += 1
         if dy2:
-            wks.from_list(letters[counter], dx2, 'Voltage', 'V', axis='X')
+            wks.from_list(letter_i(counter), dx2, 'Voltage', 'V', axis='X')
             counter += 1
-            wks.from_list(letters[counter], dy2, 'Current', 'mA/cm^2', "Dark, 2", axis='Y')
+            wks.from_list(letter_i(counter), dy2, 'Current', 'mA/cm^2', "Dark, 2", axis='Y')
             counter += 1
 
         # Create graph to plot into:
@@ -466,42 +503,71 @@ def origin_create_plots(db):
     # super hacky way to get more cols but like leave me alone
     for i in range(30):
         op.lt_exec('wks.addCol()')  # more hackyness, just forgive me
-    # Info cols:
-    wks_sum.from_list('A', [i['sys_label'] for i in ids], 'Cell', axis='X')
-    wks_sum.from_list('B', [i['user_label'] for i in ids], 'Name', axis='X')
-    wks_sum.from_list('C', [i['mux_index'] for i in ids], 'Device number', axis='X')
-    # Data cols:
-    wks_sum.from_list('D', voc_list, 'V_oc', 'V', axis='Y')
-    wks_sum.from_list('E', isc_list, 'I_sc', 'mA/cm^-2', axis='Y')
-    wks_sum.from_list('F', pce_list, 'Max power point', 'mWcm^-2', axis='Y')
-    wks_sum.from_list('G', ff_list, 'Fill Factor', '', axis='Y')
-    wks_sum.from_list('H', vm_list, 'V_mp', 'V', axis='Y')
-    wks_sum.from_list('I', im_list, 'I_mp', 'mA/cm^-2', axis='Y')
 
+    letter_counter = 1    
+
+    # Info cols:
+    wks_sum.from_list(letter_i(letter_counter), [i['sys_label'] for i in ids], 'Cell', axis='X')
+    letter_counter += 1
+    wks_sum.from_list(letter_i(letter_counter), [i['user_label'] for i in ids], 'Name', axis='X')
+    letter_counter += 1
+    wks_sum.from_list(letter_i(letter_counter), [i['mux_index'] for i in ids], 'Device number', axis='X')
+    letter_counter += 1
+    for single_var in vars[0].keys():
+        list_with_random_names = [i[single_var] for i in vars]
+        wks_sum.from_list(letter_i(letter_counter), list_with_random_names,single_var, axis='X')
+        letter_counter += 1
+  
+    # Data cols:
+    wks_sum.from_list(letter_i(letter_counter), voc_list, 'V_oc(1)', 'V', axis='Y')
+    letter_counter += 1
+    wks_sum.from_list(letter_i(letter_counter), isc_list, 'J_sc(1)', 'mA/cm^-2', axis='Y')
+    letter_counter += 1
+    wks_sum.from_list(letter_i(letter_counter), pce_list, 'Max power point(1)', 'mWcm^-2', axis='Y')
+    letter_counter += 1
+    wks_sum.from_list(letter_i(letter_counter), ff_list, 'Fill Factor(1)', '', axis='Y')
+    letter_counter += 1
+    wks_sum.from_list(letter_i(letter_counter), vm_list, 'V_mp(1)', 'V', axis='Y')
+    letter_counter += 1
+    wks_sum.from_list(letter_i(letter_counter), im_list, 'I_mp(1)', 'mA/cm^-2', axis='Y')
+    letter_counter += 1
+
+    wks_sum.from_list(letter_i(letter_counter), voc_list2, 'V_oc(2)', 'V', axis='Y')
+    letter_counter += 1
+    wks_sum.from_list(letter_i(letter_counter), isc_list2, 'J_sc(2)', 'mA/cm^-2', axis='Y')
+    letter_counter += 1
+    wks_sum.from_list(letter_i(letter_counter), pce_list2, 'Max power point(2)', 'mWcm^-2', axis='Y')
+    letter_counter += 1
+    wks_sum.from_list(letter_i(letter_counter), ff_list2, 'Fill Factor(2)', '', axis='Y')
+    letter_counter += 1
+    wks_sum.from_list(letter_i(letter_counter), vm_list2, 'V_mp(2)', 'V', axis='Y')
+    letter_counter += 1
+    wks_sum.from_list(letter_i(letter_counter), im_list2, 'I_mp(2)', 'mA/cm^-2', axis='Y')
+    letter_counter += 1
+
+    
     # Get ready....here comes...MORE HACKYNESS
-    letters = ['J','K','L','M','N','O','P','Q','R','S']
-    letter_counter = 0
     
     if voc_st_list[0]:
-        wks_sum.from_list(letters[letter_counter], voc_st_list, 'V (STABALISED)', 'V', axis='Y')
+        wks_sum.from_list(letter_i(letter_counter), voc_st_list, 'V (STABALISED)', 'V', axis='Y')
         letter_counter += 1
     if isc_st_list[0]:
-        wks_sum.from_list(letters[letter_counter], isc_st_list, 'I (STABALISED)', 'mA/cm^2', axis='Y')
+        wks_sum.from_list(letter_i(letter_counter), isc_st_list, 'I (STABALISED)', 'mA/cm^2', axis='Y')
         letter_counter += 1
     if pce_st_list[0]:
-        wks_sum.from_list(letters[letter_counter], pce_st_list, 'Max power point (MPPT)', 'mWcm^-2', axis='Y')
+        wks_sum.from_list(letter_i(letter_counter), pce_st_list, 'Max power point (MPPT)', 'mWcm^-2', axis='Y')
         letter_counter += 1
     if vm_st_list[0]:
-        wks_sum.from_list(letters[letter_counter], vm_st_list, 'V_mp (MPPT)', 'V', axis='Y')
+        wks_sum.from_list(letter_i(letter_counter), vm_st_list, 'V_mp (MPPT)', 'V', axis='Y')
         letter_counter += 1
     if im_st_list[0]:
-        wks_sum.from_list(letters[letter_counter], im_st_list, 'I_mp (MPPT)', 'mA/cm^2', axis='Y')
+        wks_sum.from_list(letter_i(letter_counter), im_st_list, 'I_mp (MPPT)', 'mA/cm^2', axis='Y')
         letter_counter += 1
     # Hyperlinks to graphs:
-    wks_sum.from_list(letters[letter_counter], graph_strs, 'IV curve', comments='CLICK the cell', axis='Z')
+    wks_sum.from_list(letter_i(letter_counter), graph_strs, 'IV curve', comments='CLICK the cell', axis='Z')
     letter_counter += 1
     if mppt_graph_strs[0]:
-        wks_sum.from_list(letters[letter_counter], mppt_graph_strs, 'MPPT', comments='CLICK the cell', axis='Z')
+        wks_sum.from_list(letter_i(letter_counter), mppt_graph_strs, 'MPPT', comments='CLICK the cell', axis='Z')
     for i in range(len(graph_strs)):
         op.lt_exec(f"wrowheight [{i+1}] (3);") 
     
@@ -512,7 +578,20 @@ if __name__ == '__main__':
     # Ask user for where the data lives:
     datapath = input("Please enter the path to your data: ")
     print_logo()  # most important part of the code, without a doubt
-
-    database = create_db(datapath)
-    err = origin_create_plots(database)
-    print("\n\nALL DONE!! You can close this window now")
+    
+    
+    for root,dirs,files in os.walk(datapath):
+        if dirs == ['processed'] and 'csv' in [i.split('.')[-1] for i in files]:
+            print('Running on single directory mode')
+            database = create_db(datapath)
+            err = origin_create_plots(database)
+            print("\n\nALL DONE!! You can close this window now") 
+            
+        else:
+            print('Running on multi directory mode')
+            for dir in dirs:
+                database = create_db(f"{datapath}/{dir}")
+                err = origin_create_plots(database)
+                
+        break
+   
