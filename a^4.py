@@ -336,6 +336,7 @@ def origin_create_plots(db):
             im_st = np.mean(db[key].get_mppt()[1][-5:])* (1e3/area)
             vm_st = np.mean(db[key].get_mppt()[0][-5:])
             mpp_st = vm_st * im_st 
+            
         except:
             im_st, vm_st, mpp_st = (None, None, None)
   
@@ -373,8 +374,8 @@ def origin_create_plots(db):
         except:
             pass
             
-        ff = abs((vm*im)/(voc*isc))
-        ff2 = abs((vm2*im2)/(voc2*isc2))
+        ff = (vm*im)/(voc*isc)
+        ff2 = (vm2*im2)/(voc2*isc2)
 
 
         voc_st_list.append(voc_st)
@@ -382,7 +383,7 @@ def origin_create_plots(db):
         vm_st_list.append(vm_st)
         im_st_list.append(im_st)
         try:
-            pce_st_list.append(abs(mpp_st))
+            pce_st_list.append(-1 * mpp_st)
         except TypeError:
             pce_st_list.append(mpp_st)
 
@@ -581,7 +582,7 @@ if __name__ == '__main__':
     
     
     for root,dirs,files in os.walk(datapath):
-        if dirs == ['processed'] and 'csv' in [i.split('.')[-1] for i in files]:
+        if 'csv' in [i.split('.')[-1] for i in files] and 'yaml' in [i.split('.')[-1] for i in files] and  dirs==[]:
             print('Running on single directory mode')
             database = create_db(datapath)
             err = origin_create_plots(database)
