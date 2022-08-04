@@ -574,6 +574,12 @@ def origin_create_plots(db):
     
     return True
 
+def isdatafolder(path):
+    for root,dirs,files in os.walk(path):
+        if 'csv' in [i.split('.')[-1] for i in files] and 'yaml' in [i.split('.')[-1] for i in files]:
+            return True
+        else:
+            return False
 
 if __name__ == '__main__':
     # Ask user for where the data lives:
@@ -581,18 +587,28 @@ if __name__ == '__main__':
     print_logo()  # most important part of the code, without a doubt
     
     
-    for root,dirs,files in os.walk(datapath):
-        if 'csv' in [i.split('.')[-1] for i in files] and 'yaml' in [i.split('.')[-1] for i in files] and  dirs==[]:
-            print('Running on single directory mode')
-            database = create_db(datapath)
-            err = origin_create_plots(database)
-            print("\n\nALL DONE!! You can close this window now") 
-            
-        else:
-            print('Running on multi directory mode')
+
+    if isdatafolder(datapath):
+        print('Running on single directory mode')
+        database = create_db(datapath)
+        err = origin_create_plots(database)
+        print("\n\nALL DONE!! You can close this window now") 
+        
+    else:
+        for root,dirs,files in os.walk(datapath):
             for dir in dirs:
-                database = create_db(f"{datapath}/{dir}")
-                err = origin_create_plots(database)
+                if isdatafolder(f"{datapath}/{dir}"):
+                    print('Running on multi directory mode')
+                    break
                 
-        break
-   
+                
+            for dir in dirs: 
+                # checks directories are ok
+                if isdatafolder(f"{datapath}/{dir}"):
+                    database = create_db(f"{datapath}/{dir}")
+                    err = origin_create_plots(database)
+                   
+            break
+            
+
+       
