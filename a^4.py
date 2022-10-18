@@ -35,7 +35,7 @@ class PixelData:
 
     """
 
-    def __init__(self, sys_label=None, user_label=None, substrate=None,
+    def __init__(self, sys_label=None, user_label=None,
                  layout=None, area=None, dark_area=None, mux_index=None):
         """
         Initial class constructor. On creation can populate the id dict with all the parameters in the csv file. Data
@@ -51,7 +51,6 @@ class PixelData:
         """
         self.__id = {"sys_label": sys_label,
                      "user_label": user_label,
-                     "substrate": substrate,
                      "layout": layout,
                      "area": area,
                      "dark_area": dark_area,
@@ -181,27 +180,56 @@ def create_db(path):
 
         for rownum, row in enumerate(reader):
             if rownum == 0:
+                
                 extra_vars = []
                 for i in range(len(row)):
-                    if row[-1-i] == 'mux_index':
+                    if row[-1-i] == 'mux_index'  or row[-1-i] == 'pad':
                         break
                     extra_vars.append(row[-1-i])
+                    
+                headers = []
+                for i in range(len(row)):
+                    if row[i-1] == 'mux_index'  or row[i-1] == 'pad':
+                        break
+                    headers.append(row[i])
+                
                 continue
-            # The key is actually also how the filename starts:
-            if row[2] == '':
-                key_str = row[1] + '_' + "device" + row[7]
+            ### Get index
+            if 'slot' in headers:
+                slot_index = headers.index('slot')
             else:
-                key_str = row[1] + '_' + row[2] + '_' + "device" + row[7]
-            db[key_str] = PixelData(row[1],
-                                    row[2],
-                                    row[3],
-                                    row[4],
-                                    row[5],
-                                    row[6],
-                                    row[7] )  # Populates ID
+                slot_index = headers.index('system_label')
+            usr_label_index = headers.index('user_label')
+            area_index = headers.index('area')
+            dark_area_index = headers.index('dark_area')
+            layout_index = headers.index('layout')
+            if 'pad' in headers:
+                pad_index = headers.index('pad')
+            else:
+                pad_index = headers.index('mux_index')
+            # The key is actually also how the filename starts:
+            if row[usr_label_index] == '':
+                key_str = row[slot_index] + '_' + "device" + row[pad_index]
+            else:
+                key_str = row[slot_index] + '_' + row[usr_label_index] + '_' + "device" + row[pad_index]
+            
+                
+                
+            db[key_str] = PixelData(row[slot_index],
+                                    row[usr_label_index],
+                                    row[layout_index],
+                                    row[area_index],
+                                    row[dark_area_index],
+                                    row[pad_index] )  # Populates ID
     # Loops over each pixel, sweep through and mines the data:
             for i, varkey in enumerate(reversed(extra_vars)):
-                db[key_str].append_var(varkey, row[8+i])
+                db[key_str].append_var(varkey, row[pad_index+1+i])
+    
+                
+                
+                
+                
+                
     for key in db.keys():
         files_in_class = find_starts_with(key, path)
         for filename in files_in_class:
@@ -574,6 +602,12 @@ def origin_create_plots(db):
     
     return True
 
+def isdatafolder(path):
+    for root,dirs,files in os.walk(path):
+        if 'csv' in [i.split('.')[-1] for i in files] and 'yaml' in [i.split('.')[-1] for i in files]:
+            return True
+        else:
+            return False
 
 if __name__ == '__main__':
     # Ask user for where the data lives:
@@ -581,18 +615,28 @@ if __name__ == '__main__':
     print_logo()  # most important part of the code, without a doubt
     
     
-    for root,dirs,files in os.walk(datapath):
-        if 'csv' in [i.split('.')[-1] for i in files] and 'yaml' in [i.split('.')[-1] for i in files] and  dirs==[]:
-            print('Running on single directory mode')
-            database = create_db(datapath)
-            err = origin_create_plots(database)
-            print("\n\nALL DONE!! You can close this window now") 
-            
-        else:
-            print('Running on multi directory mode')
+
+    if isdatafolder(datapath):
+        print('Running on single directory mode')
+        database = create_db(datapath)
+        err = origin_create_plots(database)
+        print("\n\nALL DONE!! You can close this window now") 
+        
+    else:
+        for root,dirs,files in os.walk(datapath):
             for dir in dirs:
-                database = create_db(f"{datapath}/{dir}")
-                err = origin_create_plots(database)
+                if isdatafolder(f"{datapath}/{dir}"):
+                    print('Running on multi directory mode')
+                    break
                 
-        break
-   
+                
+            for dir in dirs: 
+                # checks directories are ok
+                if isdatafolder(f"{datapath}/{dir}"):
+                    database = create_db(f"{datapath}/{dir}")
+                    err = origin_create_plots(database)
+                   
+            break
+            
+
+       
